@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Chatbox IDE Pythit</title>
+<style>
+:root{--bg:#1b1c23;--pn:#252732;--ln:#3a3d4d;--tx:#e6e6ef;--mu:#8b8fa3;--ac:#4f9cf9;--er:#ff6b6b;--ok:#6bd68b;--mono:ui-monospace,Menlo,Consolas,monospace}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--tx);font:14px system-ui,sans-serif}
+body{display:flex;flex-direction:column}
+header{display:flex;gap:8px;align-items:center;padding:8px 12px;background:var(--pn);border-bottom:1px solid var(--ln);flex-wrap:wrap}
+button{background:#33364a;color:var(--tx);border:1px solid var(--ln);border-radius:6px;padding:6px 12px;cursor:pointer;font:inherit}
+button:hover:not(:disabled){background:#40445c}button:disabled{opacity:.4;cursor:default}
+button.pri{background:#2d7d46;border-color:#2d7d46}
+#fname{flex:1;max-width:320px;min-width:120px;background:var(--bg);color:var(--tx);border:1px solid var(--ln);border-radius:6px;padding:6px 10px;font:14px var(--mono)}
+#fname.bad{border-color:var(--er)}
+.sp{flex:1}#st{color:var(--mu);font-size:12px}
+#main{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr}#main.fl{grid-template-columns:210px 1fr 1fr}#main:not(.fl)>aside{display:none}
+#main>*{min-width:0;min-height:0;display:flex;flex-direction:column;border-right:1px solid var(--ln)}
+.h{padding:6px 10px;background:#20222c;color:var(--mu);font-size:12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--ln)}
+.h button{padding:2px 8px;font-size:12px}
+#flist{overflow:auto;flex:1}
+.f{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;cursor:pointer;font-family:var(--mono);font-size:13px;word-break:break-all}
+.f:hover{background:#2c2f3c}.f.on{background:#33405e}
+.f button{border:0;background:none;padding:0 4px;color:var(--mu)}.f button:hover{color:var(--er)!important;background:none!important}
+#wrap{position:relative;flex:1;min-height:0;display:flex;overflow:hidden;background:var(--pn)}
+#gut{width:46px;flex:none;overflow:hidden;text-align:right;padding:8px 8px 20px 0;color:var(--mu);font:14px/20px var(--mono);background:#20222c;border-right:1px solid var(--ln)}
+#gut .er{color:var(--er);font-weight:bold}
+#hl{position:absolute;left:46px;right:0;height:20px;background:rgba(255,107,107,.2);display:none;pointer-events:none}
+#code{flex:1;position:relative;z-index:1;border:0;outline:0;resize:none;background:transparent;color:var(--tx);font:14px/20px var(--mono);padding:8px 8px 20px 10px;white-space:pre;overflow:auto;tab-size:4}
+#term{flex:1;overflow:auto;background:#0c0d10;color:#d8f5d8;font:14px/1.4 var(--mono);padding:10px;white-space:pre-wrap;word-break:break-word;cursor:text}
+#term .e{color:var(--er)}#term .m{color:var(--mu)}#term .u{color:#fff}
+.tin{background:transparent;border:0;outline:0;color:#fff;font:inherit;padding:0;width:1ch;caret-color:#fff}
+#errbar{padding:8px 12px;font:13px var(--mono);border-top:1px solid var(--ln)}
+#errbar.ok{background:#1d2a22;color:var(--ok)}#errbar.bad{background:#3a1f24;color:var(--er);cursor:pointer}
+[hidden]{display:none!important}
+#errbar.off{background:#20222c;color:var(--mu)}
+#sub{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;padding:6px 12px;background:#202a22;border-bottom:1px solid var(--ln)}
+#sub label{display:flex;flex-direction:column;gap:2px;font-size:11px;color:var(--mu)}
+#sub input,#sub select{background:var(--bg);color:var(--tx);border:1px solid var(--ln);border-radius:6px;padding:5px 8px;font:13px var(--mono);width:150px;max-width:none}
+#ab{flex:none;height:26px;background:var(--pn)}#ab.on{background:var(--abc,#000)}
+.abw{position:relative;display:inline-block}.abg{display:inline-flex}
+.abg button:first-child{border-radius:6px 0 0 6px}.abg button:last-child{border-radius:0 6px 6px 0;border-left:0;padding:6px 8px}
+.abg button.on{background:#33405e;border-color:var(--ac)}
+#abp{gap:8px;align-items:stretch}
+#wwrap{position:relative;width:160px;height:160px;margin:0 auto}
+#wheel{display:block;border-radius:50%;cursor:crosshair;touch-action:none}
+#mk{position:absolute;width:14px;height:14px;border:2px solid #fff;border-radius:50%;box-shadow:0 0 0 1px #000;transform:translate(-50%,-50%);pointer-events:none}
+.sl{display:flex;flex-direction:column;gap:2px;font-size:11px;color:var(--mu)}
+.rgbrow{display:flex;gap:6px}.rgbrow label{display:flex;flex-direction:column;gap:2px;font-size:11px;color:var(--mu)}
+.rgbrow input{width:56px;background:var(--bg);color:var(--tx);border:1px solid var(--ln);border-radius:6px;padding:4px 6px;font:13px var(--mono)}
+#abhex{font:12px var(--mono);color:var(--mu);text-align:center}.f .un{font-style:italic;color:var(--mu)}
+#term .g{color:var(--ok)}#term .r{color:var(--er)}#term .y{color:#f0c674}#term .p{color:#7fb4ff}
+select{background:var(--bg);color:var(--tx);border:1px solid var(--ln);border-radius:6px;padding:3px 6px;font:inherit;max-width:120px}
+.f span{flex:1}.b{font:bold 11px var(--mono);font-style:normal;margin:0 4px;flex:none}.b.g{color:var(--ok)}.b.r{color:var(--er)}
+#brow{justify-content:flex-start;font-family:var(--mono)}
+details{position:relative}summary{cursor:pointer;padding:6px 12px;background:#33364a;border:1px solid var(--ln);border-radius:6px;list-style:none}
+.menu{position:absolute;right:0;top:36px;z-index:5;background:var(--pn);border:1px solid var(--ln);border-radius:6px;padding:10px 14px;display:flex;flex-direction:column;gap:10px;white-space:nowrap}
+@media(max-width:800px){#main{display:flex;flex-direction:column}#main>section{flex:1}#main>aside{max-height:150px}}
+</style></head><body>
+<div id="ab" title="AB Mode banner"></div>
+<header>
+<b>Chatbox IDE Pythit</b><button id="ftog">📁 Files ▾</button>
+<input id="fname" placeholder="file name" spellcheck="false" autocomplete="off" aria-label="File name">
+<button id="run" class="pri">▶ Run</button><button id="stop" disabled>■ Stop</button>
+<span class="sp"></span><span id="st" hidden></span>
+<button id="save" hidden>💾 Save</button><button id="dl">⬇ Download all (JSON)</button><button id="imp">⬆ Import JSON</button><input type="file" id="impf" accept=".json,application/json" hidden>
+<span id="abw" class="abw"><span class="abg"><button id="abt" aria-pressed="false">AB Mode</button><button id="abd" title="Choose banner color" aria-label="Choose banner color">▾</button></span>
+<div id="abp" class="menu" hidden>
+<div id="wwrap"><canvas id="wheel" width="160" height="160"></canvas><div id="mk"></div></div>
+<label class="sl">Brightness<input type="range" id="abv" min="0" max="255" value="255"></label>
+<div class="rgbrow"><label>R<input type="number" id="abr" min="0" max="255"></label><label>G<input type="number" id="abg" min="0" max="255"></label><label>B<input type="number" id="abb" min="0" max="255"></label></div>
+<div id="abhex"></div>
+</div></span>
+<details id="opts"><summary>⚙ Options</summary><div class="menu">
+<label><input type="checkbox" id="o-saved"> Show last saved time</label>
+<label><input type="checkbox" id="o-files"> Show file list</label>
+<label><input type="checkbox" id="o-git"> Learning Git mode</label>
+<label><input type="checkbox" id="o-nolive"> Turn off live error checking</label>
+<label><input type="checkbox" id="o-manual"> Save only when I click Save (or Ctrl/Cmd+S)</label>
+<label><input type="checkbox" id="o-submit"> Submission mode</label>
+</div></details>
+</header>
+<div id="sub" hidden>
+<label>Username<input id="sub-user" autocomplete="off" spellcheck="false"></label>
+<label>First name<input id="sub-first" autocomplete="off" spellcheck="false"></label>
+<label>Last name<input id="sub-last" autocomplete="off" spellcheck="false"></label>
+<label>Class period<select id="sub-per"><option value="">Select period…</option></select></label>
+<button id="subdl" class="pri">Download to submit</button>
+</div>
+<div id="main">
+<aside><div id="prow" class="h" hidden><select id="proj" aria-label="Project"></select><span><button id="newp" title="New project">+</button> <button id="delp" title="Delete project">🗑</button></span></div>
+<div id="brow" class="h" hidden></div>
+<div class="h">Files <button id="new">+ New</button></div><div id="flist"></div></aside>
+<section><div class="h">Code <span>Ctrl+Enter to run</span></div>
+<div id="wrap"><div id="hl"></div><div id="gut"></div>
+<textarea id="code" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off" wrap="off" aria-label="Code editor"></textarea></div></section>
+<section><div class="h">Terminal</div><div id="term"></div></section>
+</div>
+<div id="errbar" class="ok"></div>
+<script>
+const $=id=>document.getElementById(id);
+const O=o=>Object.assign(Object.create(null),o);
+class F{constructor(v){this.v=v}}
+class PyErr{constructor(type,msg,line){this.type=type;this.msg=msg;this.line=line}}
+class Stop{constructor(q){this.q=q}}
+class Fn{constructor(name,ps,b){this.name=name;this.ps=ps;this.b=b}}
+class Mod{constructor(n,a){this.n=n;this.a=a}}
+class Scope{constructor(){this.v=new Map();this.g=null}}
+
+/* ---------- lexer ---------- */
+const OPS3=['**=','//='],OPS2=['==','!=','<=','>=','+=','-=','*=','/=','%=','**','//'];
+function lex(src){
+  src=src.replace(/\r\n?/g,'\n');
+  const T=[],ind=[0],br=[];let i=0,line=1,bol=true;
+  const push=(t,v)=>T.push({t,v,line});
+  const se=(m,l)=>new PyErr('SyntaxError',m,l||line);
+  function readStr(isF){
+    const q=src[i],tri=src.substr(i,3)==q+q+q,start=line;
+    i+=tri?3:1;let buf='';const parts=[];
+    for(;;){
+      if(i>=src.length||(!tri&&src[i]=='\n'))throw se('unterminated string literal',start);
+      const ch=src[i];
+      if(tri?src.substr(i,3)==q+q+q:ch==q){i+=tri?3:1;break}
+      if(ch=='\n')line++;
+      if(ch=='\\'){
+        const n=src[i+1],mp={n:'\n',t:'\t','\\':'\\',"'":"'",'"':'"'};
+        if(n=='\n'){i+=2;line++;continue}
+        if(n in mp){buf+=mp[n];i+=2;continue}
+        buf+=ch;i++;continue}
+      if(isF&&ch=='{'){
+        if(src[i+1]=='{'){buf+='{';i+=2;continue}
+        let j=i+1,d=0,f=-1,qq=null;
+        for(;j<src.length;j++){const x=src[j];
+          if(qq){if(x==qq)qq=null;continue}
+          if(x=="'"||x=='"'){qq=x;continue}
+          if('([{'.includes(x))d++;
+          else if(')]'.includes(x))d--;
+          else if(x=='}'){if(d==0)break;d--}
+          else if(x==':'&&d==0&&f<0)f=j;
+          else if(x=='\n'&&!tri)break}
+        if(src[j]!='}')throw se("f-string: expecting '}'");
+        if(buf)parts.push(buf);buf='';
+        parts.push({ex:src.slice(i+1,f<0?j:f),fm:f<0?'':src.slice(f+1,j),line});
+        i=j+1;continue}
+      if(isF&&ch=='}'){if(src[i+1]=='}'){buf+='}';i+=2;continue}throw se("f-string: single '}' is not allowed")}
+      buf+=ch;i++}
+    if(isF){if(buf)parts.push(buf);push('FSTR',parts)}else push('STR',buf)}
+  while(i<src.length){
+    if(bol&&!br.length){
+      let c=0,j=i;
+      while(src[j]==' '||src[j]=='\t'){c+=src[j]=='\t'?4:1;j++}
+      if(j>=src.length||src[j]=='\n'||src[j]=='#'){while(j<src.length&&src[j]!='\n')j++;i=j+1;line++;continue}
+      i=j;bol=false;
+      if(c>ind[ind.length-1]){ind.push(c);push('INDENT')}
+      else{while(c<ind[ind.length-1]){ind.pop();push('DEDENT')}
+        if(c!=ind[ind.length-1])throw new PyErr('IndentationError','unindent does not match any outer indentation level',line)}}
+    const c=src[i];let m;
+    if(c=='\n'){if(!br.length){push('NL');bol=true}line++;i++;continue}
+    if(c==' '||c=='\t'||c=='\r'){i++;continue}
+    if(c=='#'){while(i<src.length&&src[i]!='\n')i++;continue}
+    if(c=='\\'&&src[i+1]=='\n'){i+=2;line++;continue}
+    if(/[\d.]/.test(c)&&(m=/^(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?/.exec(src.slice(i,i+40)))){
+      i+=m[0].length;push('NUM',/[.eE]/.test(m[0])?new F(parseFloat(m[0])):parseInt(m[0]));continue}
+    if(/[A-Za-z_]/.test(c)){
+      let j=i;while(j<src.length&&/\w/.test(src[j]))j++;
+      const w=src.slice(i,j);
+      if((w=='f'||w=='F')&&(src[j]=='"'||src[j]=="'")){i=j;readStr(true);continue}
+      push('NAME',w);i=j;continue}
+    if(c=='"'||c=="'"){readStr(false);continue}
+    const s3=src.substr(i,3),s2=src.substr(i,2);
+    if(OPS3.includes(s3)){push('OP',s3);i+=3;continue}
+    if(OPS2.includes(s2)){push('OP',s2);i+=2;continue}
+    if('+-*/%<>=()[]{},:.'.includes(c)){
+      if('([{'.includes(c))br.push([c,line]);
+      if(')]}'.includes(c)){
+        const o=br.pop();
+        if(!o)throw se(`unmatched '${c}'`);
+        if('([{'.indexOf(o[0])!=')]}'.indexOf(c))throw se(`closing parenthesis '${c}' does not match opening parenthesis '${o[0]}'`)}
+      push('OP',c);i++;continue}
+    throw se(`invalid character '${c}'`)}
+  if(br.length)throw se(`'${br[br.length-1][0]}' was never closed`,br[br.length-1][1]);
+  if(T.length&&T[T.length-1].t!='NL')push('NL');
+  while(ind.length>1){ind.pop();push('DEDENT')}
+  push('END');return T}
+
+/* ---------- parser ---------- */
+const KW=new Set(['if','elif','else','while','for','in','def','return','break','continue','pass','import','from','as','and','or','not','is','global','True','False','None']);
+function parse(T,exprOnly){
+  let p=0;
+  const pk=()=>T[p],nx=()=>T[p++];
+  const se=(m,t)=>new PyErr('SyntaxError',m,(t||pk()).line);
+  const isO=v=>pk().t=='OP'&&pk().v==v,isK=v=>pk().t=='NAME'&&pk().v==v;
+  const eatO=v=>isO(v)&&(p++,true),eatK=v=>isK(v)&&(p++,true);
+  const needO=(v,m)=>{if(!eatO(v))throw se(m||'invalid syntax')};
+  const COMMA="invalid syntax. Perhaps you forgot a comma?";
+  const okT=e=>e.k=='n'||e.k=='sub'||(e.k=='tuple'&&e.items.length&&e.items.every(okT));
+  const chk=e=>{if(!okT(e))throw new PyErr('SyntaxError',(e.k=='call'?'cannot assign to function call here':'cannot assign to expression here')+". Maybe you meant '==' instead of '='?",e.line||pk().line)};
+  const end=t0=>{if(pk().t=='NL'){p++;return}
+    throw se(t0.t=='NAME'&&t0.v=='print'?"Missing parentheses in call to 'print'. Did you mean print(...)?":'invalid syntax')};
+  function block(ln){
+    needO(':',"expected ':'");
+    if(pk().t=='NL'){p++;
+      if(pk().t!='INDENT')throw new PyErr('IndentationError','expected an indented block',ln);
+      p++;const b=[];
+      while(pk().t!='DEDENT'&&pk().t!='END')b.push(stmt());
+      if(pk().t=='DEDENT')p++;return b}
+    return[simple()]}
+  const cond=()=>{const e=test();if(isO('='))throw se("invalid syntax. Maybe you meant '==' or ':=' instead of '='?");return e};
+  function target(){const e=postfix();chk(e);return e}
+  function stmt(){
+    const t=pk(),ln=t.line;
+    if(t.t=='INDENT')throw new PyErr('IndentationError','unexpected indent',ln);
+    if(t.t=='NAME'){
+      if(t.v=='if'||t.v=='while'){
+        p++;const c=cond(),b=block(ln);
+        if(t.v=='while')return{k:'while',c,b,line:ln};
+        let o=[];
+        if(isK('elif')){T[p].v='if';o=[stmt()]}
+        else if(isK('else')){o=block(nx().line)}
+        return{k:'if',c,b,o,line:ln}}
+      if(t.v=='for'){
+        p++;const a=[];do a.push(target());while(eatO(','));
+        const tg=a.length>1?{k:'tuple',items:a,line:ln}:a[0];
+        if(!eatK('in'))throw se('invalid syntax');
+        const it=testlist();return{k:'for',tg,it,b:block(ln),line:ln}}
+      if(t.v=='def'){
+        p++;const nm=nx();
+        if(nm.t!='NAME'||KW.has(nm.v))throw se('invalid syntax',nm);
+        needO('(',"expected '('");const ps=[];
+        while(!isO(')')){const a=nx();
+          if(a.t!='NAME'||KW.has(a.v))throw se('invalid syntax',a);
+          ps.push({n:a.v,d:eatO('=')?test():null});if(!eatO(','))break}
+        needO(')',"expected ')'");
+        return{k:'def',name:nm.v,ps,b:block(ln),line:ln}}}
+    return simple()}
+  function simple(){
+    const t=pk(),ln=t.line;let r;
+    if(t.t=='NAME'&&['break','continue','pass'].includes(t.v)){p++;r={k:t.v,line:ln}}
+    else if(isK('return')){p++;r={k:'ret',e:pk().t=='NL'?null:testlist(),line:ln}}
+    else if(isK('import')){p++;const ms=[];
+      do{const m=nx();if(m.t!='NAME'||KW.has(m.v))throw se('invalid syntax',m);ms.push([m.v,eatK('as')?nx().v:m.v])}while(eatO(','));
+      r={k:'import',ms,line:ln}}
+    else if(isK('from')){p++;const m=nx();if(!eatK('import'))throw se('invalid syntax');
+      const n=[];if(eatO('*'))n.push(['*','*']);else do{const a=nx();n.push([a.v,eatK('as')?nx().v:a.v])}while(eatO(','));
+      r={k:'from',m:m.v,n,line:ln}}
+    else if(isK('global')){p++;const n=[];do n.push(nx().v);while(eatO(','));r={k:'global',n,line:ln}}
+    else{
+      const e=testlist();
+      if(isO('=')){const parts=[e];while(eatO('='))parts.push(testlist());
+        const v=parts.pop();parts.forEach(chk);r={k:'asg',tg:parts,v,line:ln}}
+      else if(pk().t=='OP'&&/^([-+*%]|\/\/|\/|\*\*)=$/.test(pk().v)){
+        const op=nx().v.slice(0,-1);chk(e);r={k:'aug',tg:e,op,v:testlist(),line:ln}}
+      else r={k:'expr',e,line:ln}}
+    end(t);return r}
+  function testlist(){
+    const ln=pk().line,a=[test()];
+    if(!isO(','))return a[0];
+    while(eatO(',')){if(pk().t=='NL'||isO(')')||isO('=')||isO(':'))break;a.push(test())}
+    return{k:'tuple',items:a,line:ln}}
+  function test(){
+    const a=orT();
+    if(isK('if')){const ln=nx().line,c=orT();
+      if(!eatK('else'))throw se("expected 'else' after 'if' expression");
+      return{k:'tern',c,a,b:test(),line:ln}}
+    return a}
+  function orT(){let a=andT();while(isK('or')){const ln=nx().line;a={k:'or',a,b:andT(),line:ln}}return a}
+  function andT(){let a=notT();while(isK('and')){const ln=nx().line;a={k:'and',a,b:notT(),line:ln}}return a}
+  function notT(){if(isK('not')){const ln=nx().line;return{k:'not',a:notT(),line:ln}}return cmp()}
+  function cmp(){
+    const ln=pk().line,a=arith(),ops=[],rs=[];
+    for(;;){let op=null;const t=pk();
+      if(t.t=='OP'&&['==','!=','<','>','<=','>='].includes(t.v)){op=t.v;p++}
+      else if(isK('in')){op='in';p++}
+      else if(isK('not')&&T[p+1].t=='NAME'&&T[p+1].v=='in'){op='not in';p+=2}
+      else if(isK('is')){p++;op=eatK('not')?'is not':'is'}
+      if(!op)break;ops.push(op);rs.push(arith())}
+    return ops.length?{k:'cmp',a,ops,rs,line:ln}:a}
+  function arith(){let a=term();while(isO('+')||isO('-')){const o=nx();a={k:'bin',op:o.v,a,b:term(),line:o.line}}return a}
+  function term(){let a=fac();while(isO('*')||isO('/')||isO('//')||isO('%')){const o=nx();a={k:'bin',op:o.v,a,b:fac(),line:o.line}}return a}
+  function fac(){if(isO('-')||isO('+')){const o=nx();return{k:'un',op:o.v,a:fac(),line:o.line}}return pow()}
+  function pow(){const a=postfix();if(isO('**')){const o=nx();return{k:'bin',op:'**',a,b:fac(),line:o.line}}return a}
+  function postfix(){
+    let a=atom();
+    for(;;){const t=pk();
+      if(isO('(')){p++;const args=[],kw={};
+        while(!isO(')')){
+          if(pk().t=='NAME'&&T[p+1].t=='OP'&&T[p+1].v=='='&&!KW.has(pk().v)){const n=nx().v;p++;kw[n]=test()}else args.push(test());
+          if(!eatO(','))break}
+        needO(')',COMMA);a={k:'call',f:a,args,kw,line:t.line};continue}
+      if(isO('[')){p++;let lo=null,hi=null,sl=false;
+        if(!isO(':'))lo=test();
+        if(eatO(':')){sl=true;if(!isO(']'))hi=test()}
+        needO(']',"expected ']'");
+        a=sl?{k:'slice',a,lo,hi,line:t.line}:{k:'sub',a,i:lo,line:t.line};continue}
+      if(isO('.')){p++;const n=nx();if(n.t!='NAME')throw se('invalid syntax',n);a={k:'attr',a,n:n.v,line:t.line};continue}
+      return a}}
+  function atom(){
+    const t=nx(),line=t.line;
+    if(t.t=='NUM')return{k:'c',v:t.v,line};
+    if(t.t=='STR'){let s=t.v;while(pk().t=='STR')s+=nx().v;return{k:'c',v:s,line}}
+    if(t.t=='FSTR')return{k:'fs',line,parts:t.v.map(x=>typeof x=='string'?x:{e:subParse(x.ex,x.line),fm:x.fm})};
+    if(t.t=='NAME'){
+      if(t.v=='True')return{k:'c',v:true,line};
+      if(t.v=='False')return{k:'c',v:false,line};
+      if(t.v=='None')return{k:'c',v:null,line};
+      if(KW.has(t.v))throw se('invalid syntax',t);
+      return{k:'n',n:t.v,line}}
+    if(t.t=='OP'){
+      if(t.v=='('){if(eatO(')'))return{k:'tuple',items:[],line};const e=testlist();needO(')',COMMA);return e}
+      if(t.v=='['){const items=[];while(!isO(']')){items.push(test());if(!eatO(','))break}needO(']',COMMA);return{k:'list',items,line}}
+      if(t.v=='{'){const ks=[],vs=[];
+        while(!isO('}')){ks.push(test());needO(':',"expected ':'");vs.push(test());if(!eatO(','))break}
+        needO('}',COMMA);return{k:'dict',ks,vs,line}}}
+    throw se('invalid syntax',t)}
+  function subParse(s,line){
+    try{const tk=lex(s.trim());tk.forEach(x=>x.line=line);return parse(tk,true)}
+    catch(e){if(e instanceof PyErr)e.line=line;throw e}}
+  if(exprOnly){const e=testlist();if(pk().t!='NL')throw se('invalid syntax');return e}
+  const prog=[];while(pk().t!='END')prog.push(stmt());return prog}
+
+/* ---------- runtime helpers ---------- */
+let G,L=0,depth=0,stopped=false,cancel=null,lastY=0,running=false,err=null;
+const BRK={},CNT={};
+const E=(t,m)=>new PyErr(t,m,L);
+const tn=x=>x===null?'NoneType':typeof x=='boolean'?'bool':typeof x=='number'?'int':x instanceof F?'float':typeof x=='string'?'str':Array.isArray(x)?'list':x instanceof Map?'dict':x instanceof Mod?'module':'function';
+const isN=x=>typeof x=='number'||typeof x=='boolean'||x instanceof F;
+const nv=x=>x instanceof F?x.v:+x;
+const mk=(v,f)=>f?new F(v):v;
+const key=k=>k instanceof F?k.v:k;
+const T_=x=>!(x===null||x===false||x===0||x===''||(x instanceof F&&x.v===0)||(Array.isArray(x)&&!x.length)||(x instanceof Map&&!x.size));
+function repr(x){
+  if(x===null)return 'None';if(x===true)return 'True';if(x===false)return 'False';
+  if(typeof x=='number')return String(x);
+  if(x instanceof F){const v=x.v;if(Number.isInteger(v)&&Math.abs(v)<1e16)return v.toFixed(1);return String(v)}
+  if(typeof x=='string'){const q=x.includes("'")&&!x.includes('"')?'"':"'";return q+x.replace(/\\/g,'\\\\').replace(/\n/g,'\\n').split(q).join('\\'+q)+q}
+  if(Array.isArray(x))return '['+x.map(repr).join(', ')+']';
+  if(x instanceof Map)return '{'+[...x].map(([k,v])=>repr(k)+': '+repr(v)).join(', ')+'}';
+  if(x instanceof Fn)return '<function '+x.name+'>';
+  return '<built-in>'}
+const str=x=>typeof x=='string'?x:repr(x);
+function eq(a,b){
+  if(isN(a)&&isN(b))return nv(a)===nv(b);
+  if(Array.isArray(a)&&Array.isArray(b))return a.length==b.length&&a.every((x,i)=>eq(x,b[i]));
+  if(a instanceof Map&&b instanceof Map)return a.size==b.size&&[...a].every(([k,v])=>b.has(k)&&eq(v,b.get(k)));
+  return a===b}
+const c2=(o,x,y)=>o=='<'?x<y:o=='>'?x>y:o=='<='?x<=y:x>=y;
+function ord(o,a,b){
+  if(isN(a)&&isN(b))return c2(o,nv(a),nv(b));
+  if(typeof a=='string'&&typeof b=='string')return c2(o,a,b);
+  throw E('TypeError',`'${o}' not supported between instances of '${tn(a)}' and '${tn(b)}'`)}
+function has(c,x){
+  if(typeof c=='string'){if(typeof x!='string')throw E('TypeError',`'in <string>' requires string as left operand, not ${tn(x)}`);return c.includes(x)}
+  if(Array.isArray(c))return c.some(y=>eq(x,y));
+  if(c instanceof Map)return c.has(key(x));
+  throw E('TypeError',`argument of type '${tn(c)}' is not iterable`)}
+function cop(o,a,b){
+  switch(o){case'==':return eq(a,b);case'!=':return!eq(a,b);case'in':return has(b,a);case'not in':return!has(b,a);
+    case'is':return a===b;case'is not':return a!==b;default:return ord(o,a,b)}}
+function bin(o,a,b){
+  if(isN(a)&&isN(b)){
+    const x=nv(a),y=nv(b),f=a instanceof F||b instanceof F;
+    switch(o){
+      case'+':return mk(x+y,f);case'-':return mk(x-y,f);case'*':return mk(x*y,f);
+      case'/':if(y===0)throw E('ZeroDivisionError','division by zero');return new F(x/y);
+      case'//':if(y===0)throw E('ZeroDivisionError','integer division or modulo by zero');return mk(Math.floor(x/y),f);
+      case'%':if(y===0)throw E('ZeroDivisionError','integer modulo by zero');return mk(x-Math.floor(x/y)*y,f);
+      case'**':return mk(x**y,f||y<0)}}
+  const sa=typeof a=='string',la=Array.isArray(a);
+  if(o=='+'){
+    if(sa&&typeof b=='string')return a+b;
+    if(la&&Array.isArray(b))return a.concat(b);
+    if(sa)throw E('TypeError',`can only concatenate str (not "${tn(b)}") to str`)}
+  if(o=='*'){
+    if((sa||la)&&typeof b=='number')return sa?a.repeat(Math.max(b,0)):[].concat(...Array(Math.max(b,0)).fill(a));
+    if((typeof b=='string'||Array.isArray(b))&&typeof a=='number')return bin('*',b,a)}
+  throw E('TypeError',`unsupported operand type(s) for ${o}: '${tn(a)}' and '${tn(b)}'`)}
+function idx(o,i){
+  if(o instanceof Map){const k=key(i);if(!o.has(k))throw E('KeyError',repr(i));return o.get(k)}
+  const s=typeof o=='string';
+  if(!s&&!Array.isArray(o))throw E('TypeError',`'${tn(o)}' object is not subscriptable`);
+  if(typeof i!='number')throw E('TypeError',`${tn(o)} indices must be integers or slices, not ${tn(i)}`);
+  const j=i<0?i+o.length:i;
+  if(j<0||j>=o.length)throw E('IndexError',(s?'string':'list')+' index out of range');
+  return o[j]}
+function slc(o,lo,hi){
+  if(typeof o!='string'&&!Array.isArray(o))throw E('TypeError',`'${tn(o)}' object is not subscriptable`);
+  for(const v of[lo,hi])if(v!==null&&typeof v!='number')throw E('TypeError','slice indices must be integers or None');
+  const n=o.length,f=(v,d)=>v===null?d:Math.max(0,Math.min(n,v<0?v+n:v));
+  return o.slice(f(lo,0),f(hi,n))}
+const iter=x=>{
+  if(Array.isArray(x))return x;if(typeof x=='string')return[...x];if(x instanceof Map)return[...x.keys()];
+  throw E('TypeError',`'${tn(x)}' object is not iterable`)};
+function fmt(v,sp){
+  if(!sp)return str(v);
+  const m=/^([<>^])?(\d+)?(?:\.(\d+))?([fds]?)$/.exec(sp);
+  if(!m)throw E('ValueError','Invalid format specifier');
+  let s;
+  if(isN(v)&&(m[4]=='f'||(m[3]!==undefined&&m[4]=='')))s=nv(v).toFixed(m[3]!==undefined?+m[3]:6);
+  else s=str(v);
+  const w=+m[2]||0,al=m[1]||(isN(v)?'>':'<'),d=w-s.length;
+  if(d>0)s=al=='<'?s+' '.repeat(d):al=='>'?' '.repeat(d)+s:' '.repeat(d>>1)+s+' '.repeat(d-(d>>1));
+  return s}
+function pyround(v,n){
+  const r1=x=>{const f=Math.floor(x),d=x-f;return d<.5?f:d>.5?f+1:(f%2==0?f:f+1)};
+  if(n==null)return r1(v);const p=10**n;return new F(r1(v*p)/p)}
+
+/* ---------- builtins ---------- */
+const mm=(a,o)=>{const v=a.length==1?iter(a[0]):a;if(!v.length)throw E('ValueError',(o=='<'?'min':'max')+'() iterable argument is empty');return v.reduce((m,x)=>ord(o,x,m)?x:m)};
+const wait=f=>new Promise((res,rej)=>{cancel=()=>rej(new Stop());f(res)});
+const BI=O({
+  print:(a,k)=>{out(a.map(str).join(k.sep!=null?k.sep:' ')+(k.end!=null?k.end:'\n'));return null},
+  input:a=>ask(a.length?str(a[0]):''),
+  len:a=>{const x=a[0];if(typeof x=='string'||Array.isArray(x))return x.length;if(x instanceof Map)return x.size;throw E('TypeError',`object of type '${tn(x)}' has no len()`)},
+  int:a=>{const x=a[0];
+    if(typeof x=='string'){const t=x.trim().replace(/_/g,'');if(!/^[+-]?\d+$/.test(t))throw E('ValueError',`invalid literal for int() with base 10: ${repr(x)}`);return parseInt(t)}
+    if(isN(x))return Math.trunc(nv(x));
+    throw E('TypeError',`int() argument must be a string or a number, not '${tn(x)}'`)},
+  float:a=>{const x=a[0];
+    if(typeof x=='string'){const t=x.trim();if(!/^[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/.test(t))throw E('ValueError',`could not convert string to float: ${repr(x)}`);return new F(parseFloat(t))}
+    if(isN(x))return new F(nv(x));
+    throw E('TypeError',`float() argument must be a string or a number, not '${tn(x)}'`)},
+  str:a=>a.length?str(a[0]):'',
+  bool:a=>a.length?T_(a[0]):false,
+  range:a=>{
+    for(const x of a)if(typeof x!='number')throw E('TypeError',`'${tn(x)}' object cannot be interpreted as an integer`);
+    const[s,e,st]=a.length==1?[0,a[0],1]:[a[0],a[1],a[2]===undefined?1:a[2]];
+    if(st===0)throw E('ValueError','range() arg 3 must not be zero');
+    if(Math.abs((e-s)/st)>5e6)throw E('MemoryError','range is too large');
+    const r=[];for(let i=s;st>0?i<e:i>e;i+=st)r.push(i);return r},
+  abs:a=>a[0] instanceof F?new F(Math.abs(a[0].v)):Math.abs(a[0]),
+  min:a=>mm(a,'<'),max:a=>mm(a,'>'),
+  sum:a=>iter(a[0]).reduce((s,x)=>bin('+',s,x),0),
+  round:a=>pyround(nv(a[0]),a[1]),
+  list:a=>a.length?[...iter(a[0])]:[],
+  sorted:(a,k)=>{const r=[...iter(a[0])];r.sort((x,y)=>ord('<',x,y)?-1:ord('<',y,x)?1:0);return k.reverse&&T_(k.reverse)?r.reverse():r},
+  exit:()=>{throw new Stop(true)},quit:()=>{throw new Stop(true)}});
+const TIME=new Mod('time',O({
+  sleep:async a=>{
+    if(a.length!=1||!isN(a[0]))throw E('TypeError','sleep() needs one number, like time.sleep(1)');
+    if(nv(a[0])<0)throw E('ValueError','sleep length must be non-negative');
+    await wait(r=>setTimeout(r,nv(a[0])*1000));return null},
+  time:()=>new F(Date.now()/1000)}));
+const nm=x=>{if(!isN(x))throw E('TypeError',`must be real number, not ${tn(x)}`);return nv(x)};
+const f1=fn=>a=>{const v=fn(nm(a[0]));if(Number.isNaN(v))throw E('ValueError','math domain error');return new F(v)};
+const lg=fn=>a=>{const x=nm(a[0]);if(x<=0)throw E('ValueError','math domain error');return new F(fn(x))};
+const ri=x=>{if(typeof x!='number'||!Number.isInteger(x))throw E('TypeError',`'${tn(x)}' object cannot be interpreted as an integer`);return x};
+const MATH=new Mod('math',O({
+  pi:new F(Math.PI),e:new F(Math.E),tau:new F(2*Math.PI),inf:new F(Infinity),
+  sqrt:f1(Math.sqrt),sin:f1(Math.sin),cos:f1(Math.cos),tan:f1(Math.tan),
+  asin:f1(Math.asin),acos:f1(Math.acos),atan:f1(Math.atan),exp:f1(Math.exp),fabs:f1(Math.abs),
+  radians:f1(x=>x*Math.PI/180),degrees:f1(x=>x*180/Math.PI),
+  log:a=>a.length>1?new F(Math.log(nm(a[0]))/Math.log(nm(a[1]))):lg(Math.log)(a),
+  log10:lg(Math.log10),log2:lg(Math.log2),
+  floor:a=>Math.floor(nm(a[0])),ceil:a=>Math.ceil(nm(a[0])),trunc:a=>Math.trunc(nm(a[0])),
+  pow:a=>new F(Math.pow(nm(a[0]),nm(a[1]))),
+  atan2:a=>new F(Math.atan2(nm(a[0]),nm(a[1]))),
+  hypot:a=>new F(Math.hypot(...a.map(nm))),
+  factorial:a=>{const n=ri(a[0]);if(n<0)throw E('ValueError','factorial() not defined for negative values');let r=1;for(let i=2;i<=n;i++)r*=i;return r},
+  gcd:a=>{let x=Math.abs(ri(a[0])),y=Math.abs(ri(a[1]));while(y){const t=x%y;x=y;y=t}return x}}));
+let rng=Math.random;
+const seedRng=s=>{
+  let h=2166136261;for(const ch of s)h=Math.imul(h^ch.charCodeAt(0),16777619);
+  let a=h>>>0||1;
+  rng=()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}};
+const RND=new Mod('random',O({
+  random:()=>new F(rng()),
+  seed:a=>{if(a.length&&a[0]!==null)seedRng(str(a[0]));else rng=Math.random;return null},
+  randint:a=>{const lo=ri(a[0]),hi=ri(a[1]);if(hi<lo)throw E('ValueError','empty range for randrange()');return lo+Math.floor(rng()*(hi-lo+1))},
+  randrange:a=>{
+    let lo=0,hi,st=1;
+    if(a.length==1)hi=ri(a[0]);else{lo=ri(a[0]);hi=ri(a[1]);if(a.length>2)st=ri(a[2])}
+    if(st===0)throw E('ValueError','zero step for randrange()');
+    const n=Math.ceil((hi-lo)/st);
+    if(n<=0)throw E('ValueError','empty range for randrange()');
+    return lo+st*Math.floor(rng()*n)},
+  uniform:a=>new F(nm(a[0])+(nm(a[1])-nm(a[0]))*rng()),
+  choice:a=>{const s=iter(a[0]);if(!s.length)throw E('IndexError','Cannot choose from an empty sequence');return s[Math.floor(rng()*s.length)]},
+  shuffle:a=>{
+    const l=a[0];if(!Array.isArray(l))throw E('TypeError','shuffle() needs a list');
+    for(let i=l.length-1;i>0;i--){const j=Math.floor(rng()*(i+1));const t=l[i];l[i]=l[j];l[j]=t}
+    return null},
+  sample:a=>{
+    const s=[...iter(a[0])],k=ri(a[1]);
+    if(k<0||k>s.length)throw E('ValueError','Sample larger than population or is negative');
+    for(let i=0;i<k;i++){const j=i+Math.floor(rng()*(s.length-i));const t=s[i];s[i]=s[j];s[j]=t}
+    return s.slice(0,k)}}));
+const jk=k=>typeof k=='string'?k:k===null?'null':k===true?'true':k===false?'false':String(key(k));
+function jd(x,ind,lvl){
+  if(x===null)return 'null';if(x===true)return 'true';if(x===false)return 'false';
+  if(typeof x=='number')return String(x);
+  if(x instanceof F)return Number.isFinite(x.v)?repr(x):x.v!==x.v?'NaN':x.v>0?'Infinity':'-Infinity';
+  if(typeof x=='string')return JSON.stringify(x);
+  let items;const isA=Array.isArray(x);
+  if(isA)items=x.map(v=>jd(v,ind,lvl+1));
+  else if(x instanceof Map)items=[...x].map(([k,v])=>JSON.stringify(jk(k))+': '+jd(v,ind,lvl+1));
+  else throw E('TypeError',`Object of type ${tn(x)} is not JSON serializable`);
+  const o=isA?'[':'{',c=isA?']':'}';
+  if(!items.length)return o+c;
+  if(ind==null)return o+items.join(', ')+c;
+  const pad=' '.repeat(ind*(lvl+1));
+  return o+'\n'+pad+items.join(',\n'+pad)+'\n'+' '.repeat(ind*lvl)+c}
+function jl(s){
+  let i=0;
+  const bad=()=>{throw E('JSONDecodeError',`Expecting value: char ${i}`)};
+  const ws=()=>{while(i<s.length&&/\s/.test(s[i]))i++};
+  const rs=()=>{
+    const st=i;i++;
+    while(i<s.length&&s[i]!='"'){if(s[i]=='\\')i++;i++}
+    if(i>=s.length)bad();
+    i++;try{return JSON.parse(s.slice(st,i))}catch(e){bad()}};
+  const val=()=>{
+    ws();const c=s[i];
+    if(c=='{'){
+      i++;const m=new Map();ws();
+      if(s[i]=='}'){i++;return m}
+      for(;;){ws();if(s[i]!='"')bad();const k=rs();ws();if(s[i++]!=':')bad();m.set(k,val());ws();
+        if(s[i]==','){i++;continue}
+        if(s[i]=='}'){i++;return m}
+        bad()}}
+    if(c=='['){
+      i++;const l=[];ws();
+      if(s[i]==']'){i++;return l}
+      for(;;){l.push(val());ws();
+        if(s[i]==','){i++;continue}
+        if(s[i]==']'){i++;return l}
+        bad()}}
+    if(c=='"')return rs();
+    for(const[w,v]of[['true',true],['false',false],['null',null]])if(s.startsWith(w,i)){i+=w.length;return v}
+    const m=/^-?\d+(\.\d+)?([eE][+-]?\d+)?/.exec(s.slice(i));
+    if(!m)bad();
+    i+=m[0].length;return /[.eE]/.test(m[0])?new F(parseFloat(m[0])):parseInt(m[0])};
+  const v=val();ws();if(i<s.length)bad();return v}
+const JSN=new Mod('json',O({
+  dumps:(a,k)=>jd(a[0],k.indent==null?null:ri(k.indent),0),
+  loads:a=>{if(typeof a[0]!='string')throw E('TypeError',`the JSON object must be str, not ${tn(a[0])}`);return jl(a[0])}}));
+const MODS=O({time:TIME,math:MATH,random:RND,json:JSN});
+const NOMOD=m=>`No module named '${m}' (available here: time, math, random, json)`;
+const sp=(s,c,l,r)=>{const cs=c==null?' \t\n\r':c;let i=0,j=s.length;if(l)while(i<j&&cs.includes(s[i]))i++;if(r)while(j>i&&cs.includes(s[j-1]))j--;return s.slice(i,j)};
+const SM=O({
+  lower:s=>s.toLowerCase(),upper:s=>s.toUpperCase(),
+  strip:(s,a)=>sp(s,a[0],1,1),lstrip:(s,a)=>sp(s,a[0],1,0),rstrip:(s,a)=>sp(s,a[0],0,1),
+  split:(s,a)=>a.length&&a[0]!==null?s.split(a[0]):s.split(/\s+/).filter(Boolean),
+  join:(s,a)=>iter(a[0]).map(x=>{if(typeof x!='string')throw E('TypeError',`sequence item: expected str instance, ${tn(x)} found`);return x}).join(s),
+  replace:(s,a)=>s.split(a[0]).join(a[1]),
+  startswith:(s,a)=>s.startsWith(a[0]),endswith:(s,a)=>s.endsWith(a[0]),
+  find:(s,a)=>s.indexOf(a[0]),
+  count:(s,a)=>a[0]===''?s.length+1:s.split(a[0]).length-1,
+  isdigit:s=>/^\d+$/.test(s),isalpha:s=>/^\p{L}+$/u.test(s),
+  title:s=>s.toLowerCase().replace(/(^|[^\p{L}])(\p{L})/gu,(m,p,c)=>p+c.toUpperCase()),
+  capitalize:s=>s.charAt(0).toUpperCase()+s.slice(1).toLowerCase(),
+  format:(s,a)=>{let i=0;return s.replace(/\{(\d*)\}/g,(m,n)=>str(a[n===''?i++:+n]))}});
+const LM=O({
+  append:(l,a)=>(l.push(a[0]),null),
+  pop:(l,a)=>{if(!l.length)throw E('IndexError','pop from empty list');const i=a.length?(a[0]<0?a[0]+l.length:a[0]):l.length-1;if(i<0||i>=l.length)throw E('IndexError','pop index out of range');return l.splice(i,1)[0]},
+  insert:(l,a)=>(l.splice(a[0],0,a[1]),null),
+  remove:(l,a)=>{const i=l.findIndex(x=>eq(x,a[0]));if(i<0)throw E('ValueError','list.remove(x): x not in list');l.splice(i,1);return null},
+  index:(l,a)=>{const i=l.findIndex(x=>eq(x,a[0]));if(i<0)throw E('ValueError',`${repr(a[0])} is not in list`);return i},
+  count:(l,a)=>l.filter(x=>eq(x,a[0])).length,
+  sort:(l,a,k)=>{l.sort((x,y)=>ord('<',x,y)?-1:ord('<',y,x)?1:0);if(k.reverse&&T_(k.reverse))l.reverse();return null},
+  reverse:l=>(l.reverse(),null),extend:(l,a)=>(l.push(...iter(a[0])),null)});
+const DM=O({
+  get:(d,a)=>{const k=key(a[0]);return d.has(k)?d.get(k):(a.length>1?a[1]:null)},
+  keys:d=>[...d.keys()],values:d=>[...d.values()],items:d=>[...d].map(e=>[...e])});
+
+/* ---------- evaluator ---------- */
+const setv=(s,k,v)=>(s.g&&s.g.has(k)?G:s).v.set(k,v);
+async function blk(b,s){for(const st of b){const r=await ex(st,s);if(r)return r}}
+async function call(f,a,k){
+  if(typeof f=='function')return f(a,k);
+  if(!(f instanceof Fn))throw E('TypeError',`'${tn(f)}' object is not callable`);
+  const ps=f.ps;
+  if(a.length>ps.length)throw E('TypeError',`${f.name}() takes ${ps.length} positional argument${ps.length==1?'':'s'} but ${a.length} were given`);
+  const sc=new Scope();
+  for(let i=0;i<ps.length;i++){
+    const q=ps[i];let v;
+    if(i<a.length)v=a[i];else if(q.n in k)v=k[q.n];else if(q.dv!==undefined)v=q.dv;
+    else throw E('TypeError',`${f.name}() missing required positional argument: '${q.n}'`);
+    sc.v.set(q.n,v)}
+  if(depth>=100)throw E('RecursionError','maximum recursion depth exceeded');
+  depth++;
+  try{const r=await blk(f.b,sc);return r&&'ret' in r?r.ret:null}finally{depth--}}
+async function ev(n,s){
+  switch(n.k){
+    case'c':return n.v;
+    case'n':{const k=n.n;
+      if(s.v.has(k))return s.v.get(k);
+      if(G.v.has(k))return G.v.get(k);
+      if(k in BI)return BI[k];
+      L=n.line;throw E('NameError',`name '${k}' is not defined`)}
+    case'fs':{let r='';for(const p of n.parts)r+=typeof p=='string'?p:fmt(await ev(p.e,s),p.fm);return r}
+    case'list':case'tuple':{const r=[];for(const x of n.items)r.push(await ev(x,s));return r}
+    case'dict':{const m=new Map();for(let i=0;i<n.ks.length;i++){const k=await ev(n.ks[i],s);m.set(key(k),await ev(n.vs[i],s))}return m}
+    case'bin':{const a=await ev(n.a,s),b=await ev(n.b,s);L=n.line;return bin(n.op,a,b)}
+    case'un':{const a=await ev(n.a,s);L=n.line;
+      if(!isN(a))throw E('TypeError',`bad operand type for unary ${n.op}: '${tn(a)}'`);
+      return n.op=='-'?(a instanceof F?new F(-a.v):-a):(a instanceof F?a:+a)}
+    case'and':{const a=await ev(n.a,s);return T_(a)?ev(n.b,s):a}
+    case'or':{const a=await ev(n.a,s);return T_(a)?a:ev(n.b,s)}
+    case'not':return!T_(await ev(n.a,s));
+    case'cmp':{let a=await ev(n.a,s);
+      for(let i=0;i<n.ops.length;i++){const b=await ev(n.rs[i],s);L=n.line;if(!cop(n.ops[i],a,b))return false;a=b}
+      return true}
+    case'tern':return T_(await ev(n.c,s))?ev(n.a,s):ev(n.b,s);
+    case'sub':{const o=await ev(n.a,s),i=await ev(n.i,s);L=n.line;return idx(o,i)}
+    case'slice':{const o=await ev(n.a,s),lo=n.lo?await ev(n.lo,s):null,hi=n.hi?await ev(n.hi,s):null;L=n.line;return slc(o,lo,hi)}
+    case'attr':{const o=await ev(n.a,s);L=n.line;
+      if(o instanceof Mod){if(n.n in o.a)return o.a[n.n];throw E('AttributeError',`module '${o.n}' has no attribute '${n.n}'`)}
+      const tb=typeof o=='string'?SM:Array.isArray(o)?LM:o instanceof Map?DM:null;
+      if(!tb||!(n.n in tb))throw E('AttributeError',`'${tn(o)}' object has no attribute '${n.n}'`);
+      return(a,k)=>tb[n.n](o,a,k)}
+    case'call':{const f=await ev(n.f,s),a=[],k=Object.create(null);
+      for(const x of n.args)a.push(await ev(x,s));
+      for(const q in n.kw)k[q]=await ev(n.kw[q],s);
+      L=n.line;return call(f,a,k)}}}
+async function asg(t,v,s){
+  if(t.k=='n')return setv(s,t.n,v);
+  if(t.k=='tuple'){
+    L=t.line;const it=iter(v),c=t.items.length;
+    if(it.length!=c)throw E('ValueError',it.length>c?`too many values to unpack (expected ${c})`:`not enough values to unpack (expected ${c}, got ${it.length})`);
+    for(let i=0;i<c;i++)await asg(t.items[i],it[i],s);return}
+  const o=await ev(t.a,s),i=await ev(t.i,s);L=t.line;
+  if(Array.isArray(o)){
+    if(typeof i!='number')throw E('TypeError','list indices must be integers or slices, not '+tn(i));
+    const j=i<0?i+o.length:i;
+    if(j<0||j>=o.length)throw E('IndexError','list assignment index out of range');
+    o[j]=v}
+  else if(o instanceof Map)o.set(key(i),v);
+  else throw E('TypeError',`'${tn(o)}' object does not support item assignment`)}
+async function ex(n,s){
+  L=n.line;
+  if(stopped)throw new Stop();
+  if(performance.now()-lastY>30){await new Promise(r=>setTimeout(r));lastY=performance.now();if(stopped)throw new Stop()}
+  switch(n.k){
+    case'expr':await ev(n.e,s);return;
+    case'asg':{const v=await ev(n.v,s);for(const t of n.tg)await asg(t,v,s);return}
+    case'aug':{const c=await ev(n.tg,s),v=await ev(n.v,s);L=n.line;await asg(n.tg,bin(n.op,c,v),s);return}
+    case'if':return T_(await ev(n.c,s))?blk(n.b,s):blk(n.o,s);
+    case'while':
+      while(T_(await ev(n.c,s))){const r=await blk(n.b,s);if(r){if(r===BRK)break;if(r!==CNT)return r}}
+      return;
+    case'for':{
+      const v=await ev(n.it,s);L=n.line;
+      for(const x of[...iter(v)]){await asg(n.tg,x,s);const r=await blk(n.b,s);if(r){if(r===BRK)break;if(r!==CNT)return r}}
+      return}
+    case'break':return BRK;case'continue':return CNT;case'pass':return;
+    case'ret':return{ret:n.e?await ev(n.e,s):null};
+    case'def':{const ps=[];for(const p of n.ps)ps.push({n:p.n,dv:p.d?await ev(p.d,s):undefined});setv(s,n.name,new Fn(n.name,ps,n.b));return}
+    case'global':(s.g||(s.g=new Set()));n.n.forEach(x=>s.g.add(x));return;
+    case'import':
+      for(const[m,as]of n.ms){if(!(m in MODS))throw E('ModuleNotFoundError',NOMOD(m));setv(s,as,MODS[m])}
+      return;
+    case'from':{
+      if(!(n.m in MODS))throw E('ModuleNotFoundError',NOMOD(n.m));
+      const mo=MODS[n.m];
+      for(const[a,b]of n.n){
+        if(a=='*'){for(const k in mo.a)setv(s,k,mo.a[k])}
+        else{if(!(a in mo.a))throw E('ImportError',`cannot import name '${a}' from '${n.m}'`);setv(s,b,mo.a[a])}}
+      return}}}
+
+/* ---------- terminal ---------- */
+const term=$('term'),ta=$('code'),LH=20;
+function out(t,c){const sp=document.createElement('span');if(c)sp.className=c;sp.textContent=t;term.appendChild(sp);term.scrollTop=term.scrollHeight}
+const ask=p=>wait(res=>{
+  out(p);
+  const i=document.createElement('input');
+  i.className='tin';i.autocomplete='off';i.spellcheck=false;
+  i.setAttribute('autocapitalize','off');i.setAttribute('autocorrect','off');
+  term.appendChild(i);i.focus();term.scrollTop=term.scrollHeight;
+  i.oninput=()=>i.style.width=Math.max(1,i.value.length+1)+'ch';
+  i.onkeydown=e=>{if(e.key=='Enter'){const v=i.value;i.remove();out(v+'\n','u');res(v)}}});
+term.onclick=()=>{if(getSelection().toString())return;const i=term.querySelector('.tin');if(i)i.focus()};
+function setBtn(){$('run').disabled=running;$('stop').disabled=!running}
+let runFile=null;
+function showErr(e){
+  const rf=runFile||cur();e.f=rf.name;err=e;
+  const srcLine=(rf.code.split('\n')[e.line-1]||'').trim();
+  const syn=/Syntax|Indentation/.test(e.type);
+  out(`\n${syn?'':'Traceback (most recent call last):\n'}  File "${rf.name||'(unnamed)'}", line ${e.line}\n    ${srcLine}\n${e.type}: ${e.msg}\n`,'e');
+  mark()}
+async function runCode(name,fromShell){
+  if(running)return;
+  if(S.o.manual)grab();else save();
+  const f=(typeof name=='string'&&P().files.find(x=>x.name==name))||cur();
+  runFile=f;err=null;
+  term.querySelectorAll('.cl').forEach(x=>x.remove());
+  if(S.o.git){if(!fromShell)out('$ python '+f.name+'\n','u')}else term.textContent='';
+  mark();
+  let ast;
+  try{ast=parse(lex(f.code))}
+  catch(e){if(e instanceof PyErr){showErr(e);if(S.o.git&&!fromShell)showPrompt();return}throw e}
+  running=true;stopped=false;lastY=performance.now();depth=0;G=new Scope();setBtn();
+  try{await blk(ast,G);out('\n[program finished]\n','m')}
+  catch(e){
+    if(e instanceof Stop)out(e.q?'\n[program finished]\n':'\n[stopped]\n','m');
+    else if(e instanceof PyErr)showErr(e);
+    else{const rc=e instanceof RangeError;showErr(new PyErr(rc?'RecursionError':'Error',rc?'maximum recursion depth exceeded':String(e&&e.message||e),L))}}
+  finally{running=false;term.querySelectorAll('.tin').forEach(i=>i.remove());setBtn();if(S.o.git&&!fromShell)showPrompt()}}
+$('run').onclick=()=>runCode();
+$('stop').onclick=()=>{stopped=true;if(cancel)cancel()};
+
+/* ---------- editor / errors ---------- */
+const errHere=()=>err&&(!err.f||err.f===cur().name);
+function gutter(){
+  const n=ta.value.split('\n').length;let h='';
+  for(let i=1;i<=n;i++)h+=`<div${errHere()&&err.line==i?' class="er"':''}>${i}</div>`;
+  $('gut').innerHTML=h;$('gut').scrollTop=ta.scrollTop}
+function hl(){const h=$('hl');if(!errHere()){h.style.display='none';return}h.style.display='block';h.style.top=(8+(err.line-1)*LH-ta.scrollTop)+'px'}
+function mark(){
+  const b=$('errbar');
+  if(err){b.className='bad';b.textContent=`✖ ${err.f&&err.f!==cur().name?err.f+' — ':''}Line ${err.line}: ${err.type}: ${err.msg}   (click to jump to the line)`}
+  else if(S.o.nolive){b.className='off';b.textContent='Live error checking is off - errors show up when you press Run'}
+  else{b.className='ok';b.textContent='✔ No errors found'}
+  gutter();hl()}
+function jump(n){
+  const ls=ta.value.split('\n');let s=0;for(let i=0;i<n-1;i++)s+=ls[i].length+1;
+  ta.focus();ta.setSelectionRange(s,s+(ls[n-1]||'').length);ta.scrollTop=Math.max(0,(n-4)*LH);hl()}
+$('errbar').onclick=()=>{if(errHere())jump(err.line)};
+let tm;
+function onEdit(){
+  err=null;mark();clearTimeout(tm);
+  if(S.o.nolive)return;
+  tm=setTimeout(()=>{try{parse(lex(ta.value))}catch(e){if(e instanceof PyErr){e.f=cur().name;err=e}else throw e}mark();if(S.o.git)renderFiles()},600)}
+ta.oninput=()=>{markU();onEdit()};
+ta.onscroll=()=>{$('gut').scrollTop=ta.scrollTop;hl()};
+ta.onkeydown=e=>{
+  if(e.key=='Tab'&&!e.shiftKey){e.preventDefault();ta.setRangeText('    ',ta.selectionStart,ta.selectionEnd,'end');markU();onEdit()}
+  else if((e.ctrlKey||e.metaKey)&&e.key=='Enter'){e.preventDefault();runCode()}};
+
+/* ---------- projects, files & storage ---------- */
+const KEY='pyide.files.v1',OKEY='pyide.opts.v1';
+const START='';
+const newProj=(n,code)=>({name:n,files:[{name:'',code}],cur:0,git:null});
+let S={projects:[newProj('my-project',START)],p:0,o:{}};
+try{
+  const r=JSON.parse(localStorage.getItem(KEY));
+  if(r&&Array.isArray(r.projects)&&r.projects.length)S=r;
+  else if(r&&Array.isArray(r.files)&&r.files.length)S.projects=[{name:'my-project',files:r.files,cur:r.cur|0,git:null}];
+  S.p=Math.min(Math.max(S.p|0,0),S.projects.length-1);
+  S.projects.forEach(p=>{p.cur=Math.min(Math.max(p.cur|0,0),p.files.length-1)})}catch(e){}
+let sv={};try{sv=JSON.parse(localStorage.getItem(OKEY))||{}}catch(e){}
+S.o=Object.assign({saved:false,files:true,git:false,nolive:false,manual:false},S.o,sv);
+const P=()=>S.projects[S.p],cur=()=>P().files[P().cur];
+const grab=()=>{cur().code=ta.value};
+const ow=(o,k)=>Object.hasOwn(o,k);
+let unsaved=false;
+function updSave(){$('save').textContent=unsaved?'💾 Save ●':'💾 Save'}
+function markU(){if(S.o.manual&&!unsaved){unsaved=true;updSave()}}
+function save(){
+  grab();
+  try{localStorage.setItem(KEY,JSON.stringify(S));unsaved=false;updSave();$('st').textContent='Last saved '+new Date().toLocaleTimeString();$('st').hidden=!S.o.saved}
+  catch(e){$('st').textContent='⚠ Could not save (storage blocked or full)';$('st').hidden=false}}
+const autoSave=()=>{if(S.o.manual)markU();else save()};
+function saveOpts(){try{localStorage.setItem(OKEY,JSON.stringify(S.o))}catch(e){}}
+function badge(n){
+  const r=P().git;if(!r)return null;
+  const w=wmap(),ix=r.index,hd=headSnap(r);
+  if(!ow(ix,n)&&!ow(hd,n))return['?','r'];
+  if(ow(ix,n)&&w[n]!==ix[n])return['M','r'];
+  if(ix[n]!==hd[n])return[ow(hd,n)?'M':'A','g'];
+  return null}
+function renderProj(){
+  const g=S.o.git;$('prow').hidden=!g;$('brow').hidden=!g;if(!g)return;
+  const sel=$('proj');sel.innerHTML='';
+  S.projects.forEach((p,i)=>{const o=document.createElement('option');o.value=i;o.textContent=p.name;sel.append(o)});
+  sel.value=S.p;
+  const r=P().git;
+  $('brow').textContent=r?'⎇ '+(hname(r)||'detached at '+sh7(r.head)):'not a git repo yet — type: git init'}
+function renderFiles(){
+  renderProj();
+  const l=$('flist');l.innerHTML='';
+  P().files.forEach((f,i)=>{
+    const d=document.createElement('div');d.className='f'+(i==P().cur?' on':'');
+    const n=document.createElement('span');n.textContent=f.name||'(no name yet)';if(!f.name)n.className='un';d.append(n);
+    const b=S.o.git&&f.name&&badge(f.name);
+    if(b){const t=document.createElement('i');t.className='b '+b[1];t.textContent=b[0];d.append(t)}
+    const x=document.createElement('button');x.textContent='×';x.title='Delete file';
+    x.onclick=e=>{e.stopPropagation();del(i)};
+    d.append(x);d.onclick=()=>{if(i!=P().cur){grab();P().cur=i;load()}};l.append(d)})}
+function load(){
+  const f=cur();ta.value=f.code;$('fname').value=f.name;$('fname').classList.remove('bad');
+  err=null;mark();renderFiles();ta.scrollTop=0;abOv=null;applyAB()}
+function del(i){
+  const fs=P().files;
+  if(fs.length==1){alert('You need to keep at least one file.');return}
+  if(!confirm('Delete '+(fs[i].name||'this file')+'?'))return;
+  grab();const was=cur().name;fs.splice(i,1);
+  P().cur=Math.max(0,fs.findIndex(f=>f.name==was));load();autoSave()}
+$('new').onclick=()=>{
+  grab();const fs=P().files;let n=1;
+  while(fs.some(f=>f.name=='untitled'+n+'.py'))n++;
+  fs.push({name:'untitled'+n+'.py',code:''});P().cur=fs.length-1;load();autoSave();$('fname').select()};
+$('fname').oninput=()=>{
+  const v=$('fname').value.trim(),ok=v&&!P().files.some((f,i)=>i!=P().cur&&f.name==v);
+  $('fname').classList.toggle('bad',!ok);if(ok){cur().name=v;renderFiles();markU();abOv=null;applyAB()}};
+$('fname').onchange=()=>{$('fname').value=cur().name;$('fname').classList.remove('bad')};
+$('fname').onkeydown=e=>{if(e.key=='Enter')$('fname').blur()};
+const z2=n=>String(n).padStart(2,'0');
+const stamp=(d=new Date())=>`${d.getFullYear()}_${z2(d.getMonth()+1)}_${z2(d.getDate())}_${z2(d.getHours())}_${z2(d.getMinutes())}_${z2(d.getSeconds())}`;
+const fileList=p=>p.files.map(f=>({name:f.name,content:f.code}));
+function buildData(){
+  grab();
+  return S.o.git?{projects:S.projects.map(p=>({name:p.name,files:fileList(p),git:p.git}))}:{files:fileList(P())}}
+function saveJson(data,name){
+  const b=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+$('dl').onclick=()=>saveJson(buildData(),`pythit_save_${stamp()}.json`);
+
+/* ---------- submission mode ---------- */
+const PERIODS=[['a_first1','First (1st)'],['b_second2','Second (2nd)'],['c_third3','Third (3rd)'],['d_fourth4','Fourth (4th)'],['e_fifth5','Fifth (5th)'],['f_sixth6','Sixth (6th)'],['g_seventh7','Seventh (7th)']];
+(()=>{const sel=$('sub-per');PERIODS.forEach(([v,t])=>{const o=document.createElement('option');o.value=v;o.textContent=t;sel.append(o)})})();
+const SUBF={'sub-user':'user','sub-first':'first','sub-last':'last','sub-per':'period'};
+Object.keys(SUBF).forEach(id=>{$(id).oninput=$(id).onchange=()=>{S.o.sub=Object.assign({},S.o.sub,{[SUBF[id]]:$(id).value});saveOpts()}});
+function fillSub(){const u=S.o.sub||{};for(const id in SUBF)$(id).value=u[SUBF[id]]||''}
+const snake=t=>String(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'')||'x';
+$('subdl').onclick=()=>{
+  const u=S.o.sub||{},miss=[];
+  if(!u.period)miss.push('class period');
+  if(!(u.last||'').trim())miss.push('last name');
+  if(!(u.first||'').trim())miss.push('first name');
+  if(!(u.user||'').trim())miss.push('username');
+  if(miss.length){alert('Please fill in: '+miss.join(', ')+'.');return}
+  const d=new Date(),base=buildData();
+  if(!base.files)base.files=fileList(P());
+  const info={period:u.period,periodLabel:(PERIODS.find(x=>x[0]==u.period)||[])[1]||u.period,firstName:u.first.trim(),lastName:u.last.trim(),username:u.user.trim(),submittedAt:d.toISOString(),app:'Chatbox IDE Pythit'};
+  saveJson({submission:info,...base},`${u.period}_${snake(u.last)}_${snake(u.first)}_${snake(u.user)}_${stamp(d)}.json`)};
+
+const vg=g=>g&&typeof g=='object'&&typeof g.head=='string'&&['br','c','tags','index'].every(k=>g[k]&&typeof g[k]=='object')?g:null;
+function uniq(n,taken,sep){
+  if(!taken.includes(n))return n;
+  const m=/^(.*?)(\.[^.]*)?$/.exec(n);let i=2;
+  while(taken.includes(m[1]+sep+i+(m[2]||'')))i++;
+  return m[1]+sep+i+(m[2]||'')}
+function importData(d){
+  const fl=(v,taken)=>{
+    const out=[],names=[...taken];
+    (Array.isArray(v)?v:[]).forEach(f=>{
+      if(!f||typeof f!='object')return;
+      let n=String(f.name??'').trim();
+      if(!n)n='untitled.py';
+      n=uniq(n,names,'_');names.push(n);
+      out.push({name:n,code:String(f.content??f.code??'')})});
+    return out};
+  const isBlank=p=>!p.git&&p.files.length==1&&!p.files[0].name&&!p.files[0].code;
+  grab();
+  let added=0,nf=0;
+  if(d&&Array.isArray(d.projects)){
+    const inc=d.projects.filter(p=>p&&typeof p=='object');
+    if(!inc.length)throw new Error('no projects found');
+    if(S.projects.every(isBlank))S.projects=[];
+    const first=S.projects.length;
+    inc.forEach(p=>{
+      const files=fl(p.files,[]);if(!files.length)files.push({name:'',code:''});
+      const name=uniq(String(p.name||'imported').trim()||'imported',S.projects.map(x=>x.name),'_');
+      S.projects.push({name,files,cur:0,git:vg(p.git)});added++;nf+=files.length});
+    S.p=first;
+    if(!S.o.git&&(inc.length>1||S.projects.slice(first).some(p=>p.git))){S.o.git=true;S.o.files=true;saveOpts()}}
+  else if(d&&Array.isArray(d.files)){
+    const pr=P(),blank=isBlank(pr),files=fl(d.files,blank?[]:pr.files.map(f=>f.name));
+    if(!files.length)throw new Error('no files found');
+    if(blank)pr.files=[];
+    pr.files.push(...files);pr.cur=pr.files.length-files.length;nf=files.length;added=1}
+  else throw new Error('this does not look like a Pythit save');
+  load();applyOpts();autoSave();
+  alert(`Imported ${nf} file${nf==1?'':'s'}${d.projects?' in '+added+' project'+(added==1?'':'s'):''}.`+(S.o.git&&d.projects&&added?'\nLearning Git mode is on so you can see the projects and their history.':''))}
+$('imp').onclick=()=>$('impf').click();
+$('impf').onchange=async e=>{
+  const f=e.target.files[0];e.target.value='';
+  if(!f)return;
+  try{importData(JSON.parse(await f.text()))}
+  catch(x){alert('Could not import that file: '+(x&&x.message||x))}};
+$('save').onclick=()=>save();
+addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()=='s'){e.preventDefault();save()}});
+setInterval(()=>{if(!S.o.manual)save()},5000);
+addEventListener('beforeunload',e=>{if(S.o.manual){if(unsaved){e.preventDefault();e.returnValue=''}}else save()});
+
+/* ---------- options ---------- */
+function applyOpts(){
+  $('o-saved').checked=S.o.saved;$('o-files').checked=S.o.files;$('o-git').checked=S.o.git;
+  $('o-nolive').checked=S.o.nolive;$('o-manual').checked=S.o.manual;$('o-submit').checked=S.o.submit;$('sub').hidden=!S.o.submit;fillSub();
+  $('st').hidden=!S.o.saved;$('main').classList.toggle('fl',S.o.files);
+  $('save').hidden=!S.o.manual;updSave();
+  $('ftog').textContent='📁 Files '+(S.o.files?'▴':'▾');
+  renderFiles();showPrompt(false)}
+const opt=(id,k)=>{$(id).onchange=e=>{S.o[k]=e.target.checked;saveOpts();applyOpts();if(k=='nolive')onEdit()}};
+opt('o-saved','saved');opt('o-files','files');opt('o-nolive','nolive');opt('o-manual','manual');opt('o-submit','submit');
+$('ftog').onclick=()=>{S.o.files=!S.o.files;saveOpts();applyOpts()};
+$('o-git').onchange=e=>{
+  S.o.git=e.target.checked;
+  if(S.o.git){S.o.files=true;out('Learning Git mode is on. Type help to see commands, or git init to start tracking this project.\n','m')}
+  saveOpts();applyOpts();showPrompt(true)};
+$('proj').onchange=e=>{grab();S.p=+e.target.value;load();showPrompt(false);autoSave()};
+$('newp').onclick=()=>{
+  const n=(window.prompt('New project name:')||'').trim();
+  if(!n)return;
+  if(S.projects.some(p=>p.name==n)){alert('A project with that name already exists.');return}
+  grab();S.projects.push(newProj(n,'print("Hello!")\n'));S.p=S.projects.length-1;load();showPrompt(false);autoSave()};
+$('delp').onclick=()=>{
+  if(S.projects.length==1){alert('You need at least one project.');return}
+  if(!confirm('Delete project '+P().name+', all its files and its git history?'))return;
+  S.projects.splice(S.p,1);S.p=Math.max(0,S.p-1);load();showPrompt(false);autoSave()};
+
+/* ---------- AB mode banner ---------- */
+let abOv=null,hsv=[0,0,0];
+const abAuto=()=>!['HelloWorld.py','HelloName.py'].includes(cur().name);
+const abOn=()=>abOv??abAuto();
+const AB=()=>Array.isArray(S.o.ab)&&S.o.ab.length==3?S.o.ab:[0,0,0];
+const wc=$('wheel'),WW=160,WR=WW/2;
+function h2r(h,s,v){const f=n=>{const k=(n+h/60)%6;return v-v*s*Math.max(0,Math.min(k,4-k,1))};return[f(5),f(3),f(1)].map(x=>Math.round(x*255))}
+function r2h(r,g,b){
+  r/=255;g/=255;b/=255;
+  const mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;let h=0;
+  if(d){h=mx==r?((g-b)/d)%6:mx==g?(b-r)/d+2:(r-g)/d+4;h*=60;if(h<0)h+=360}
+  return[h,mx?d/mx:0,mx]}
+function applyAB(){
+  const on=abOn(),[r,g,b]=AB();
+  $('ab').classList.toggle('on',on);
+  $('ab').style.setProperty('--abc',`rgb(${r},${g},${b})`);
+  $('abt').classList.toggle('on',on);
+  $('abt').setAttribute('aria-pressed',on)}
+function drawWheel(){
+  const x=wc.getContext('2d'),im=x.createImageData(WW,WW),v=hsv[2];
+  for(let j=0;j<WW;j++)for(let i=0;i<WW;i++){
+    const dx=i+.5-WR,dy=j+.5-WR,d=Math.hypot(dx,dy),k=(j*WW+i)*4;
+    if(d>WR)continue;
+    let h=Math.atan2(dy,dx)*180/Math.PI;if(h<0)h+=360;
+    const c=h2r(h,d/WR,v);im.data[k]=c[0];im.data[k+1]=c[1];im.data[k+2]=c[2];im.data[k+3]=255}
+  x.putImageData(im,0,0)}
+function paintAB(redraw){
+  const c=h2r(hsv[0],hsv[1],hsv[2]);
+  const set=(id,v)=>{if(document.activeElement!==$(id))$(id).value=v};
+  set('abr',c[0]);set('abg',c[1]);set('abb',c[2]);set('abv',Math.round(hsv[2]*255));
+  const a=hsv[0]*Math.PI/180,d=hsv[1]*WR;
+  $('mk').style.left=(WR+d*Math.cos(a))+'px';$('mk').style.top=(WR+d*Math.sin(a))+'px';
+  $('abhex').textContent='#'+c.map(x=>x.toString(16).padStart(2,'0')).join('');
+  if(redraw)drawWheel();
+  applyAB()}
+function syncAB(redraw){
+  S.o.ab=h2r(hsv[0],hsv[1],hsv[2]);S.o.abSet=true;
+  paintAB(redraw);saveOpts()}
+function pickWheel(e){
+  const b=wc.getBoundingClientRect(),sx=WW/(b.width||WW);
+  const dx=(e.clientX-b.left)*sx-WR,dy=(e.clientY-b.top)*sx-WR,d=Math.min(Math.hypot(dx,dy),WR);
+  let h=Math.atan2(dy,dx)*180/Math.PI;if(h<0)h+=360;
+  const wasZero=!hsv[2];if(wasZero)hsv[2]=1;
+  hsv=[h,d/WR,hsv[2]];syncAB(wasZero)}
+wc.onpointerdown=e=>{wc.setPointerCapture(e.pointerId);pickWheel(e)};
+wc.onpointermove=e=>{if(e.buttons)pickWheel(e)};
+$('abv').oninput=()=>{hsv[2]=(+$('abv').value||0)/255;syncAB(true)};
+const rgbIds=['abr','abg','abb'];
+const rgbVals=()=>rgbIds.map(i=>{const n=parseInt($(i).value,10);return isNaN(n)?0:Math.max(0,Math.min(255,n))});
+rgbIds.forEach(id=>{
+  $(id).oninput=()=>{
+    const[h,s,v]=r2h(...rgbVals());
+    hsv=[s>0?h:hsv[0],v>0?s:hsv[1],v];syncAB(true)};
+  $(id).onchange=()=>{const c=h2r(hsv[0],hsv[1],hsv[2]);rgbIds.forEach((x,i)=>{$(x).value=c[i]})}});
+$('abt').onclick=()=>{
+  abOv=!abOn();applyAB();
+  if(abOv&&!S.o.abSet)$('abp').hidden=false};
+$('abd').onclick=()=>{$('abp').hidden=!$('abp').hidden};
+addEventListener('click',e=>{if(!$('abw').contains(e.target))$('abp').hidden=true});
+hsv=r2h(...AB());paintAB(true);
+
+/* ---------- learning git mode (local only) ---------- */
+let dirty=false;
+const Er=m=>out(m+'\n','r');
+const okName=n=>/^\w[\w.\/-]*$/.test(n)&&n!='__proto__';
+const hsh=s=>{let r='';for(let k=1;k<=5;k++){let h=0x811c9dc5^k;for(let i=0;i<s.length;i++)h=Math.imul(h^s.charCodeAt(i),16777619);r+=(h>>>0).toString(16).padStart(8,'0')}return r};
+const hname=r=>r.head.startsWith('ref:')?r.head.slice(4):null;
+const headHash=r=>{const b=hname(r);return b!==null?(r.br[b]||null):r.head};
+const headSnap=r=>{const h=headHash(r);return h?r.c[h].snap:{}};
+const sh7=h=>h.slice(0,7);
+const wmap=()=>{grab();return Object.fromEntries(P().files.filter(f=>f.name).map(f=>[f.name,f.code]))};
+const same=(a,b)=>{const k=Object.keys(a);return k.length==Object.keys(b).length&&k.every(n=>ow(b,n)&&a[n]===b[n])};
+function touch(was){
+  if(!P().files.length)P().files.push({name:'untitled.py',code:''});
+  P().cur=Math.max(0,P().files.findIndex(x=>x.name==was));dirty=true}
+function setFile(n,code){const x=P().files.find(x=>x.name==n);x?x.code=code:P().files.push({name:n,code})}
+function args(a){
+  const ar=[],f=new Set();let msg=null;
+  for(let i=1;i<a.length;i++){const x=a[i];
+    if(x=='-m'||x=='-am'){msg=a[++i]??null;if(x=='-am')f.add('-a')}
+    else if(x[0]=='-'&&x.length>1)f.add(x);else ar.push(x)}
+  return{ar,f,msg}}
+function resolve(r,x){
+  const m=/^(.*?)(?:~(\d+))?$/.exec(x),b=m[1],n=+(m[2]||0);let h=null;
+  if(b=='HEAD')h=headHash(r);
+  else if(ow(r.br,b))h=r.br[b];
+  else if(ow(r.tags,b))h=r.tags[b];
+  else if(b.length>=4){const k=Object.keys(r.c).filter(k=>k.startsWith(b));if(k.length==1)h=k[0]}
+  for(let i=0;h&&i<n;i++)h=r.c[h].p;
+  return h||null}
+function stat(r){
+  const w=wmap(),ix=r.index,hd=headSnap(r),S1=[],S2=[],U=[];
+  for(const n of[...new Set([...Object.keys(ix),...Object.keys(hd)])].sort()){
+    if(!ow(hd,n)&&ow(ix,n))S1.push(['new file',n]);
+    else if(ow(hd,n)&&!ow(ix,n))S1.push(['deleted',n]);
+    else if(hd[n]!==ix[n])S1.push(['modified',n])}
+  for(const n of Object.keys(ix).sort()){
+    if(!ow(w,n))S2.push(['deleted',n]);else if(w[n]!==ix[n])S2.push(['modified',n])}
+  for(const n of Object.keys(w).sort())if(!ow(ix,n))U.push(n);
+  return{S1,S2,U}}
+function ldiff(a,b){
+  const x=a===''?[]:a.split('\n'),y=b===''?[]:b.split('\n'),n=x.length,m=y.length;
+  const d=Array.from({length:n+1},()=>new Array(m+1).fill(0));
+  for(let i=n-1;i>=0;i--)for(let j=m-1;j>=0;j--)d[i][j]=x[i]==y[j]?d[i+1][j+1]+1:Math.max(d[i+1][j],d[i][j+1]);
+  const o=[];let i=0,j=0;
+  while(i<n&&j<m){if(x[i]==y[j]){o.push([' ',x[i]]);i++;j++}else if(d[i+1][j]>=d[i][j+1])o.push(['-',x[i++]]);else o.push(['+',y[j++]])}
+  while(i<n)o.push(['-',x[i++]]);
+  while(j<m)o.push(['+',y[j++]]);
+  return o}
+function showDiff(f,a,b){
+  out(`diff --git a/${f} b/${f}\n`,'y');
+  if(a===undefined)out('new file\n','m');
+  if(b===undefined)out('deleted file\n','m');
+  const o=ldiff(a??'',b??''),keep=o.map((l,i)=>o.slice(Math.max(0,i-2),i+3).some(z=>z[0]!=' '));
+  let gap=false;
+  o.forEach((l,i)=>{
+    if(!keep[i]){gap=true;return}
+    if(gap){out('...\n','m');gap=false}
+    out(l[0]+l[1]+'\n',l[0]=='+'?'g':l[0]=='-'?'r':'')})}
+function switchTo(r,snap,head){
+  const w=wmap(),hd=headSnap(r),ix=r.index,bad=[],was=cur().name;
+  const ns=[...new Set([...Object.keys(hd),...Object.keys(snap)])].filter(n=>hd[n]!==snap[n]);
+  for(const n of ns){
+    const tracked=ow(ix,n)||ow(hd,n);
+    if(tracked?(ix[n]!==hd[n]||(ow(ix,n)&&w[n]!==ix[n])):(ow(w,n)&&w[n]!==snap[n]))bad.push(n)}
+  if(bad.length){
+    Er('error: Your local changes to these files would be overwritten:');
+    bad.forEach(n=>out('        '+n+'\n'));
+    out('Commit them (git add + git commit) or undo them (git restore <file>) first.\n');return false}
+  for(const n of ns){if(ow(snap,n))setFile(n,snap[n]);else P().files=P().files.filter(x=>x.name!=n)}
+  r.index={...snap};r.head=head;touch(was);return true}
+const HELP=`Shell commands:  ls  cat <file>  touch <file>  rm <file>  python <file>  clear  help
+Git commands (all local - no push/pull):
+  git init                          start tracking this project
+  git status                        what has changed?
+  git add <file> | .                stage changes for the next commit
+  git commit -m "message"           save a snapshot  (-am also stages tracked files)
+  git log [--oneline]               history of commits
+  git diff [--staged] [file]        line-by-line changes
+  git branch [name]                 list or create a branch  (-d name deletes one)
+  git checkout <branch|tag|hash>    switch to it  (-b name creates + switches)
+  git restore [--staged] <file>     undo changes  (--source=<ref> gets an older version)
+  git reset [--hard] [ref]          unstage, or move back to an earlier commit
+  git tag [name] [commit]           list or label a commit  (-d name deletes one)
+  git merge <branch>                fast-forward merges only
+  git rm <file>                     delete a file and stage the deletion
+Tip: HEAD~1 means "one commit before HEAD".
+`;
+function git(a){
+  const c=a[0];
+  if(!c||c=='help'||c=='--help'){out(HELP);return}
+  const r=P().git;
+  if(c=='init'){
+    if(r)out('Reinitialized existing Git repository\n');
+    else{P().git={head:'ref:main',br:{main:null},c:{},tags:{},index:{}};out(`Initialized empty Git repository in ${P().name}/.git/\n`)}
+    return}
+  if(!r){Er("fatal: not a git repository (run 'git init' first)");return}
+  const{ar,f,msg}=args(a),w=wmap(),hd=headSnap(r),hh=headHash(r),b=hname(r),was=cur().name;
+  switch(c){
+    case'status':{
+      const s=stat(r);
+      out(b?`On branch ${b}\n`:`HEAD detached at ${sh7(hh)}\n`);
+      if(!hh)out('\nNo commits yet\n');
+      if(s.S1.length){out('\nChanges to be committed:\n  (use "git restore --staged <file>..." to unstage)\n');s.S1.forEach(([t,n])=>out(`\t${t}:   ${n}\n`,'g'))}
+      if(s.S2.length){out('\nChanges not staged for commit:\n  (use "git add <file>..." to update what will be committed)\n  (use "git restore <file>..." to discard changes)\n');s.S2.forEach(([t,n])=>out(`\t${t}:   ${n}\n`,'r'))}
+      if(s.U.length){out('\nUntracked files:\n  (use "git add <file>..." to include in what will be committed)\n');s.U.forEach(n=>out(`\t${n}\n`,'r'))}
+      if(!s.S1.length&&!s.S2.length&&!s.U.length)out(hh?'\nnothing to commit, working tree clean\n':'\nnothing to commit (create files and use "git add" to track them)\n');
+      else if(!s.S1.length)out(s.S2.length?'\nno changes added to commit (use "git add" and/or "git commit -a")\n':'\nnothing added to commit but untracked files present (use "git add" to track)\n');
+      return}
+    case'add':{
+      if(!ar.length){out('Nothing specified, nothing added. (try: git add .)\n');return}
+      const names=ar.includes('.')||f.has('-A')||f.has('--all')?[...new Set([...Object.keys(w),...Object.keys(r.index)])]:ar;
+      for(const n of names){
+        if(ow(w,n))r.index[n]=w[n];
+        else if(ow(r.index,n))delete r.index[n];
+        else Er(`fatal: pathspec '${n}' did not match any files`)}
+      return}
+    case'commit':{
+      if(!msg){Er('Aborting commit: add a message, like  git commit -m "my message"');return}
+      if(f.has('-a'))for(const n of Object.keys(r.index)){if(ow(w,n))r.index[n]=w[n];else delete r.index[n]}
+      if(same(r.index,hd)){const s=stat(r);out(s.S2.length||s.U.length?'nothing staged to commit - use "git add <file>" first\n':'nothing to commit, working tree clean\n');return}
+      const snap={...r.index},t=Date.now(),h=hsh(JSON.stringify([snap,hh,msg,t]));
+      r.c[h]={msg,p:hh,snap,t};
+      if(b!==null)r.br[b]=h;else r.head=h;
+      const ch=[...new Set([...Object.keys(snap),...Object.keys(hd)])].filter(n=>snap[n]!==hd[n]).length;
+      out(`[${b||'detached HEAD'}${hh?'':' (root-commit)'} ${sh7(h)}] ${msg}\n ${ch} file${ch==1?'':'s'} changed\n`);return}
+    case'log':{
+      if(!hh){Er(`fatal: your current branch '${b}' does not have any commits yet`);return}
+      const one=f.has('--oneline');
+      const deco=x=>{
+        const d=[];
+        if(hh==x)d.push(b?'HEAD -> '+b:'HEAD');
+        for(const k in r.br)if(r.br[k]==x&&k!=b)d.push(k);
+        for(const k in r.tags)if(r.tags[k]==x)d.push('tag: '+k);
+        return d.length?' ('+d.join(', ')+')':''};
+      for(let h=hh;h;h=r.c[h].p){
+        const k=r.c[h];
+        if(one){out(sh7(h)+deco(h),'y');out(' '+k.msg+'\n')}
+        else{out(`commit ${h}${deco(h)}\n`,'y');out(`Date:   ${new Date(k.t).toLocaleString()}\n\n    ${k.msg}\n\n`)}}
+      return}
+    case'diff':{
+      const st=f.has('--staged')||f.has('--cached'),A=st?hd:r.index,B=st?r.index:w;
+      const ns=ar.length?ar:[...new Set([...Object.keys(A),...(st?Object.keys(B):[])])].sort();
+      for(const n of ns){const x=ow(A,n)?A[n]:undefined,y=ow(B,n)?B[n]:undefined;if(x!==y)showDiff(n,x,y)}
+      return}
+    case'branch':{
+      if(!ar.length){
+        if(!b)out(`* (HEAD detached at ${sh7(hh)})\n`,'g');
+        Object.keys(r.br).sort().forEach(k=>out((k==b?'* ':'  ')+k+'\n',k==b?'g':''));return}
+      if(f.has('-d')||f.has('-D')){
+        for(const k of ar){
+          if(!ow(r.br,k))Er(`error: branch '${k}' not found.`);
+          else if(k==b)Er(`error: cannot delete branch '${k}' - you are on it`);
+          else{delete r.br[k];out(`Deleted branch ${k}\n`)}}
+        return}
+      const nm=ar[0];
+      if(!okName(nm)){Er(`fatal: '${nm}' is not a valid branch name`);return}
+      if(ow(r.br,nm)){Er(`fatal: a branch named '${nm}' already exists`);return}
+      const at=ar[1]?resolve(r,ar[1]):hh;
+      if(!at){Er(hh?`fatal: not a valid object name: '${ar[1]}'`:'fatal: make a first commit before creating branches');return}
+      r.br[nm]=at;return}
+    case'checkout':case'switch':{
+      if(f.has('-b')||f.has('-c')){
+        const nm=ar[0];
+        if(!nm||!okName(nm)){Er('fatal: give a valid new branch name, e.g. git checkout -b my-branch');return}
+        if(ow(r.br,nm)){Er(`fatal: a branch named '${nm}' already exists`);return}
+        if(!hh){Er('fatal: make a first commit before creating branches');return}
+        r.br[nm]=hh;r.head='ref:'+nm;out(`Switched to a new branch '${nm}'\n`);return}
+      const t=ar[0];
+      if(!t){Er('fatal: say where to go, e.g. git checkout main');return}
+      if(ow(r.br,t)){
+        if(b===t){out(`Already on '${t}'\n`);return}
+        const h=r.br[t];
+        if(switchTo(r,h?r.c[h].snap:{},'ref:'+t))out(`Switched to branch '${t}'\n`);return}
+      const h=resolve(r,t);
+      if(h){
+        if(switchTo(r,r.c[h].snap,h))out(`Note: switching to '${t}'.\n\nYou are in 'detached HEAD' state. Changes made here will be lost unless you\ncreate a branch:  git checkout -b <new-branch-name>\n\nHEAD is now at ${sh7(h)} ${r.c[h].msg}\n`);
+        return}
+      if(c=='checkout'&&(ow(r.index,t)||ow(hd,t))){git(['restore',t]);return}
+      Er(`error: pathspec '${t}' did not match any file(s) known to git`);return}
+    case'restore':{
+      const st=f.has('--staged')||f.has('-S'),wt=f.has('--worktree')||f.has('-W')||!st;
+      const sa=[...f].find(x=>x.startsWith('--source='));let src=null;
+      if(sa){src=resolve(r,sa.slice(9));if(!src){Er(`fatal: could not resolve ${sa.slice(9)}`);return}}
+      if(!ar.length){Er('fatal: you must say which file(s) to restore, e.g. git restore main.py');return}
+      const from=src?r.c[src].snap:(st?hd:r.index);
+      const names=ar.includes('.')?[...new Set([...Object.keys(r.index),...Object.keys(hd)])]:ar;
+      for(const n of names){
+        if(!ow(from,n)&&!ow(r.index,n)&&!ow(hd,n)){Er(`error: pathspec '${n}' did not match any file(s) known to git`);continue}
+        if(st){if(ow(from,n))r.index[n]=from[n];else delete r.index[n]}
+        if(wt){if(ow(from,n))setFile(n,from[n]);else P().files=P().files.filter(x=>x.name!=n)}}
+      touch(was);return}
+    case'reset':{
+      const t0=ar[0],isRef=t0?resolve(r,t0):null,hard=f.has('--hard'),soft=f.has('--soft');
+      if(t0&&!isRef&&!hard){for(const n of ar){if(ow(hd,n))r.index[n]=hd[n];else delete r.index[n]}return}
+      if(!t0&&!hard&&!soft){r.index={...hd};return}
+      const tg=t0?isRef:hh;
+      if(!tg){Er(`fatal: ambiguous argument '${t0||'HEAD'}': unknown revision`);return}
+      const sn=r.c[tg].snap,old={...hd,...r.index};
+      if(b!==null)r.br[b]=tg;else r.head=tg;
+      if(soft)return;
+      r.index={...sn};
+      if(hard){
+        for(const n of Object.keys(old))if(!ow(sn,n))P().files=P().files.filter(x=>x.name!=n);
+        for(const n of Object.keys(sn))setFile(n,sn[n]);
+        touch(was);out(`HEAD is now at ${sh7(tg)} ${r.c[tg].msg}\n`)}
+      return}
+    case'tag':{
+      if(f.has('-d')){for(const k of ar){if(ow(r.tags,k)){delete r.tags[k];out(`Deleted tag '${k}'\n`)}else Er(`error: tag '${k}' not found.`)}return}
+      if(!ar.length){Object.keys(r.tags).sort().forEach(k=>out(k+'\n'));return}
+      const h=ar[1]?resolve(r,ar[1]):hh;
+      if(!h){Er('fatal: no commit to tag yet');return}
+      if(!okName(ar[0])){Er(`fatal: '${ar[0]}' is not a valid tag name`);return}
+      if(ow(r.tags,ar[0])){Er(`fatal: tag '${ar[0]}' already exists`);return}
+      r.tags[ar[0]]=h;return}
+    case'merge':{
+      const t=ar[0],th=t&&resolve(r,t);
+      if(!th){Er(`merge: ${t||'(nothing)'} - not something we can merge`);return}
+      if(b===null){Er('merge: switch to a branch first');return}
+      if(th===hh){out('Already up to date.\n');return}
+      let x=th;while(x&&x!==hh)x=r.c[x].p;
+      if(hh&&x!==hh){
+        let y=hh;while(y&&y!==th)y=r.c[y].p;
+        if(y===th)out('Already up to date.\n');else Er('Not possible to fast-forward - this simplified Git only supports fast-forward merges.');
+        return}
+      if(switchTo(r,r.c[th].snap,r.head)){r.br[b]=th;out(`Updating ${hh?sh7(hh):'(none)'}..${sh7(th)}\nFast-forward\n`)}
+      return}
+    case'rm':{
+      for(const n of ar){
+        if(!ow(r.index,n)){Er(`fatal: pathspec '${n}' did not match any files`);continue}
+        delete r.index[n];P().files=P().files.filter(x=>x.name!=n);out(`rm '${n}'\n`)}
+      touch(was);return}
+    default:Er(`git: '${c}' is not a git command. Type help to see the ones available here.`)}}
+
+/* ---------- command line (git mode) ---------- */
+const hist=[];let hi=0;
+async function sh(line){
+  grab();
+  const tk=[...line.matchAll(/"([^"]*)"|'([^']*)'|(\S+)/g)].map(m=>m[1]??m[2]??m[3]),c=tk[0],fs=P().files;
+  try{
+    if(!c);
+    else if(c=='git')git(tk.slice(1));
+    else if(c=='help')out(HELP);
+    else if(c=='clear')term.textContent='';
+    else if(c=='ls')out(fs.map(f=>f.name).join('  ')+'\n');
+    else if(c=='cat'){const f=fs.find(x=>x.name==tk[1]);if(f)out(f.code+(!f.code||f.code.endsWith('\n')?'':'\n'));else Er(`cat: ${tk[1]||''}: No such file`)}
+    else if(c=='touch'){
+      if(!tk[1]||!/^[\w.\-]+$/.test(tk[1]))Er('usage: touch <file name>');
+      else if(!fs.some(x=>x.name==tk[1]))fs.push({name:tk[1],code:''})}
+    else if(c=='rm'){
+      const i=fs.findIndex(x=>x.name==tk[1]);
+      if(i<0)Er(`rm: cannot remove '${tk[1]||''}': No such file`);
+      else if(fs.length==1)Er('rm: cannot remove the last file in a project');
+      else{const was=cur().name;fs.splice(i,1);touch(was)}}
+    else if(c=='python'||c=='python3'){
+      if(!fs.some(x=>x.name==tk[1]))Er(`python: can't open file '${tk[1]||''}'`);
+      else await runCode(tk[1],true)}
+    else Er(`${c}: command not found (type help)`)}
+  catch(e){Er('Error: '+(e&&e.message||e))}
+  markU();if(dirty){dirty=false;load()}else renderFiles()}
+function showPrompt(focus){
+  term.querySelectorAll('.cl').forEach(x=>x.remove());
+  if(!S.o.git||running)return;
+  const w=document.createElement('span');w.className='cl';
+  const lab=document.createElement('span');lab.className='p';
+  const r=P().git;
+  lab.textContent=P().name+(r?' ('+(hname(r)||sh7(r.head))+')':'')+' $ ';
+  const i=document.createElement('input');
+  i.className='tin';i.autocomplete='off';i.spellcheck=false;
+  i.setAttribute('autocapitalize','off');i.setAttribute('autocorrect','off');
+  i.oninput=()=>{i.style.width=Math.max(1,i.value.length+1)+'ch'};
+  i.onkeydown=async e=>{
+    if(e.key=='Enter'){
+      const v=i.value;w.remove();out(lab.textContent,'p');out(v+'\n','u');
+      if(v.trim())hist.push(v);
+      hi=hist.length;await sh(v);showPrompt(true)}
+    else if(e.key=='ArrowUp'&&hi>0){i.value=hist[--hi];i.oninput();e.preventDefault()}
+    else if(e.key=='ArrowDown'){hi=Math.min(hi+1,hist.length);i.value=hist[hi]||'';i.oninput();e.preventDefault()}};
+  w.append(lab,i);term.appendChild(w);term.scrollTop=term.scrollHeight;
+  if(focus)i.focus()}
+load();applyOpts();setBtn();
+</script></body></html>
